@@ -1,0 +1,59 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  continuous-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.10.0
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      # - name: Install dependencies
+      #   run: pip3 install -r requirements.txt
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+  continuous-deployment:
+    runs-on: ubuntu-latest
+    needs: [continuous-integration]
+    steps:
+      - name: Change appspec file
+        uses: actions/checkout@v2
+    
+      - name: Adding prod env
+        run: |
+          echo '${{ secrets.PROD_ENV }}'  > .env
+      
+      - name: Create deployment archive
+        run: |
+          zip -r deployment.zip . 
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ap-south-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
+      - name: Upload deployment archive to S3
+        run: |
+          aws s3 cp deployment.zip s3://zolnoi-deployment/${{ github.event.repository.name }}-prod.zip
+         
+     # Step 2
+      - name: Create CodeDeploy Deployment
+        id: deploy
+        run: |
+          aws deploy create-deployment \
+            --application-name test \
+            --deployment-group-name test_group \
+            --s3-location bucket=zolnoi-deployment,key=${{ github.event.repository.name }}-cicd.zip,bundleType=zip
