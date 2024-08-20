@@ -56,4 +56,4 @@ jobs:
           aws deploy create-deployment \
             --application-name test \
             --deployment-group-name test_group \
-            --s3-location bucket=zolnoi-deployment,key=${{ github.event.repository.name }}-cicd.zip,bundleType=zip
+            --s3-location bucket=zolnoi-deployment,key=${{ github.event.repository.name }}-prod.zip,bundleType=zip
