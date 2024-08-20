@@ -6,11 +6,25 @@ files:
 hooks:
   AfterInstall:
    - location: scripts/after_install.sh
-     timeout: 300
+     timeout: 2000
      runas: root
   ApplicationStart:
    - location: scripts/application_start.sh
      timeout: 2000
      runas: root
-deployment:
-  terminationWaitTimeInMinutes: 1
+# version: 0.0
+# os: linux
+# files:
+#  - source: .
+#    destination: /home/ubuntu/apps/iot
+# hooks:
+#   AfterInstall:
+#    - location: scripts/after_install.sh
+#      timeout: 300
+#      runas: root
+#   ApplicationStart:
+#    - location: scripts/application_start.sh
+#      timeout: 2000
+#      runas: root
+# deployment:
+#   terminationWaitTimeInMinutes: 1
